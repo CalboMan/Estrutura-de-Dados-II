@@ -14,7 +14,7 @@ typedef struct
 {
     int cod; 
     int idade; 
-    long enderecoDisco; 
+    long ender; 
 
 } MoldeA2_A3_A4;
 
@@ -33,11 +33,6 @@ FILE* criarArquivosA3();
 FILE* ordenarArquivosA3(); 
 void criarArquivosA5A6(); 
 FILE* imprimirArquivoA5();
-
-/*
-FILE* ordenarArquivoA6(); 
-void imprimirArquivoA7();
-*/
 
 int main() 
 {
@@ -88,7 +83,7 @@ FILE* criarArquivoA2(FILE *a1)
         MoldeA2_A3_A4 molde;  
         molde.cod = cliente.cod;
         molde.idade = cliente.idade;
-        molde.enderecoDisco = endereco;
+        molde.ender = endereco;
 
         fwrite(&molde, sizeof(MoldeA2_A3_A4), 1, arquivoA2);
         endereco += sizeof(Cliente);
@@ -214,14 +209,14 @@ void criarArquivosA5A6()
             }
             indice.idade = Molde_atual.idade;
             indice.quantidade = 1;
-            indice.primeEnd = Molde_atual.enderecoDisco;
+            indice.primeEnd = Molde_atual.ender;
         } 
         else {
             indice.quantidade++;
         }
 
         fwrite(&ultimoEndereco, sizeof(long), 1, arquivoA6); // Encadeamento
-        ultimoEndereco = Molde_atual.enderecoDisco;
+        ultimoEndereco = Molde_atual.ender;
         Molde_antigo = Molde_atual;
         prim = 0;
     }
@@ -255,101 +250,3 @@ FILE* imprimirArquivoA5()
     fclose(a5);
     return a5;
 }
-
-
-/*
-
-FILE* ordenarArquivoA6() {
-    FILE *a6 = fopen("A6.dat", "rb");
-    if (a6 == NULL) 
-    {
-        printf("Erro ao abrir o arquivo A6 em sua ordenação.\n");
-        exit(EXIT_FAILURE);
-    }
-
-     // Ler o arquivo A6 em memória
-    long enderecos[100]; // Supondo um limite arbitrário
-    int count = 0;
-
-    while (fread(&enderecos[count], sizeof(long), 1, a6) > 0) {
-        count++;
-    }
-    fclose(a6);
-
-    // Abrir o arquivo A1 (TabelaA1Cliente.dat) para buscar informações completas
-    FILE *arquivoA1 = fopen("TabelaA1.dat", "rb");
-    if (arquivoA1 == NULL) 
-    {
-        printf("Erro ao abrir o arquivo A1.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Estrutura para armazenar os registros do A7
-
-    MoldeA2_A3_A4 registrosA7[100];
-
-    // Recuperar informações do A1 com base nos endereços
-    for (int i = 0; i < count; i++) 
-    {
-        fseek(arquivoA1, enderecos[i], SEEK_SET);
-        Cliente cliente;
-        fread(&cliente, sizeof(Cliente), 1, arquivoA1);
-
-        registrosA7[i].cod = cliente.cod;
-        registrosA7[i].idade = cliente.idade;
-        registrosA7[i].enderecoDisco = enderecos[i];
-    }
-    fclose(arquivoA1);
-
-    // Ordenar os registros por cod
-    for (int i = 0; i < count - 1; i++) 
-    {
-        for (int j = i + 1; j < count; j++) 
-        {
-            if (registrosA7[i].cod > registrosA7[j].cod) 
-            {
-                // Troca os registros
-                typeof(registrosA7[0]) temp = registrosA7[i];
-                registrosA7[i] = registrosA7[j];
-                registrosA7[j] = temp;
-            }
-        }
-    }
-
-    // Salvar no arquivo A7
-    FILE *arquivoA7 = fopen("A7.dat", "wb");
-    if (arquivoA7 == NULL) 
-    {
-        printf("Erro ao criar o arquivo A7.\n");
-        exit(EXIT_FAILURE);
-    }
-    fwrite(registrosA7, sizeof(registrosA7[0]), count, arquivoA7);
-    fclose(arquivoA7);
-
-    printf("Arquivo A7 gerado e ordenado por chave primária.\n");
-    return arquivoA7;
-}
-
-
-void imprimirArquivoA7() 
-{
-    FILE *a7 = fopen("A7.dat", "rb");
-    if (a7 == NULL) 
-    {
-        printf("Erro ao abrir o arquivo A7 para leitura.\n");
-        exit(EXIT_FAILURE);
-    }
-
-    MoldeA2_A3_A4 registro;
-
-    printf("\n--- Conteúdo do Arquivo A7 ---\n");
-    while (fread(&registro, sizeof(registro), 1, a7) > 0) 
-    {
-        printf("Chave Primária: %d, Idade: %d, Endereço: %ld\n",
-               registro.cod, registro.idade, registro.enderecoDisco);
-    }
-
-    fclose(a7);
-}
-
-*/
