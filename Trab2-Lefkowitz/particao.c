@@ -241,7 +241,7 @@ FILE* imprimirArquivoA5()
     if (a5 == NULL) 
     {
         printf("Erro ao abrir o arquivo A5.\n");
-        return NULL;
+        exit(EXIT_FAILURE);
     }
 
     printf("\n--- Partição do Arquivo A5 ---\n\n");
@@ -321,7 +321,7 @@ FILE* ordenarArquivoA6() {
     if (arquivoA7 == NULL) 
     {
         printf("Erro ao criar o arquivo A7.\n");
-        return NULL;
+        exit(EXIT_FAILURE);
     }
     fwrite(registrosA7, sizeof(registrosA7[0]), count, arquivoA7);
     fclose(arquivoA7);
@@ -337,7 +337,7 @@ void imprimirArquivoA7()
     if (a7 == NULL) 
     {
         printf("Erro ao abrir o arquivo A7 para leitura.\n");
-        return;
+        exit(EXIT_FAILURE);
     }
 
     MoldeA2_A3_A4 registro;
