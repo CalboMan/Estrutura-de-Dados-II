@@ -64,11 +64,11 @@ int main()
     FILE* A5 = criarArquivoA5(); // Quarta Etapa
     FILE *A6 = criarArquivoA6(); // Quarta Etapa
 
-    imprimirArquivoA1();
+    /*imprimirArquivoA1();
     imprimirArquivoA2();
     imprimirArquivoA3();
     imprimirArquivoA4();
-    imprimirArquivoA5(); 
+    imprimirArquivoA5();*/
     imprimirArquivoA6();
 
     return 0;
