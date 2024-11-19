@@ -1,20 +1,18 @@
 
 //Por pedir apenas o arquivo de índices, aplicamos o Algoritmo de Lefkowitz apenas até obtermos A5, na quarta etapa. 
 
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "cliente.h"
-#include "cliente.c"
 
 // Estrutura para os Arquivos A2, A3 e A4
 typedef struct 
 {
+    int reg;
     int cod; 
     int idade; 
-    long ender; 
+    int ender;
 
 } MoldeA2_A3_A4;
 
@@ -22,17 +20,32 @@ typedef struct
 typedef struct 
 {
     int idade; 
-    int quantidade; 
-    long primeEnd; 
+    int primeEnd; 
+    int qtde; 
     
-} MoldeA5_A6;
+} MoldeA5;
 
+typedef struct 
+{
+    int reg;
+    int cod;
+    int idade; 
+    int ender;
+
+} MoldeA6;
 
 FILE* criarArquivoA2(FILE* a1); 
 FILE* criarArquivosA3(); 
 FILE* ordenarArquivosA3(); 
-void criarArquivosA5A6(); 
-FILE* imprimirArquivoA5();
+FILE* criarArquivoA5();
+FILE* criarArquivoA6();
+
+void imprimirArquivoA1();
+void imprimirArquivoA2();
+void imprimirArquivoA3();
+void imprimirArquivoA4(); 
+void imprimirArquivoA5();
+void imprimirArquivoA6();
 
 int main() 
 {
@@ -41,18 +54,22 @@ int main()
     FILE *arqOrig = fopen("TabelaA1.dat", "rb");
     if (arqOrig == NULL) 
     {
-        printf("Não foi possível abrir o Arquivo A1 para leitura!\n");
+        printf("Não foi possível abrir o Arquivo A1\n");
         exit(EXIT_FAILURE);
     }
 
     FILE* A2 = criarArquivoA2(arqOrig); // Primeira Etapa
     FILE* A3 = criarArquivosA3(); // Segunda Etapa
     FILE* A4 = ordenarArquivosA3(); // Terceira Etapa
-    criarArquivosA5A6(); // Quarta Etapa
-    FILE* A5  = imprimirArquivoA5(); // Resultado desejado
+    FILE* A5 = criarArquivoA5(); // Quarta Etapa
+    FILE *A6 = criarArquivoA6(); // Quarta Etapa
 
-    //FILE* A7 = ordenarArquivoA6(); 
-    //imprimirArquivoA7(); 
+    imprimirArquivoA1();
+    imprimirArquivoA2();
+    imprimirArquivoA3();
+    imprimirArquivoA4();
+    imprimirArquivoA5(); 
+    imprimirArquivoA6();
 
     return 0;
 }
@@ -63,12 +80,6 @@ FILE* criarArquivoA2(FILE *a1)
 
     FILE *arquivoA2 = fopen("A2.dat", "wb");
 
-    if (a1 == NULL)
-    { 
-        printf("Erro ao criar o Arquivo A1 (Original).\n");
-        exit(EXIT_FAILURE);
-    }
-
     if(arquivoA2 == NULL)
     {
         printf("Erro ao criar o Arquivo A2.\n");
@@ -76,21 +87,23 @@ FILE* criarArquivoA2(FILE *a1)
     }
 
     Cliente cliente; 
-    long endereco = 0;
-    // Para cada registro, será salvo no formato do Molde, junto com o endereço, e escrito no Arquivo A2, até A1 terminar.
+    // Cada registro será salvo no formato do Molde, até A1 terminar.
+    int count = 1;
     while (fread(&cliente, sizeof(Cliente), 1, a1) > 0) 
     {
         MoldeA2_A3_A4 molde;  
+        molde.reg = count;
         molde.cod = cliente.cod;
         molde.idade = cliente.idade;
-        molde.ender = endereco;
 
         fwrite(&molde, sizeof(MoldeA2_A3_A4), 1, arquivoA2);
-        endereco += sizeof(Cliente);
+        count++;
+
     }
 
     fclose(a1);
     fclose(arquivoA2);
+
     printf("\nArquivo A2 gerado com êxito.\n");
     return arquivoA2;
 }
@@ -114,7 +127,7 @@ FILE* criarArquivosA3()
 
     MoldeA2_A3_A4 molde;
     
-    // Como há apenas o indice secundário da Idade, será gerado o mesmo Molde do anterior, sem endereço. 
+    // Como há apenas o molde_a5 secundário da Idade, será gerado o mesmo Molde do anterior
     while (fread(&molde, sizeof(MoldeA2_A3_A4), 1, a2) > 0) 
     {
         fwrite(&molde, sizeof(MoldeA2_A3_A4), 1, arquivoA3);
@@ -168,14 +181,15 @@ FILE* ordenarArquivosA3()
     fwrite(clientes, sizeof(MoldeA2_A3_A4), count, arquivoA4);
     
     fclose(arquivoA4);
-    printf("Arquivo A4 gerado e ordenado por idade.\n");
+    printf("Arquivo A4 criado e ordenado por idade.\n");
+
+
 }
 
-void criarArquivosA5A6() 
+FILE* criarArquivoA5() 
 {
     FILE *a4 = fopen("A4.dat", "rb");
     FILE *arquivoA5 = fopen("A5.dat", "wb");
-    FILE *arquivoA6 = fopen("A6.dat", "wb");
 
     if (a4 == NULL) 
     {
@@ -189,48 +203,169 @@ void criarArquivosA5A6()
         exit(EXIT_FAILURE);
     }
 
+    MoldeA2_A3_A4 molde_anterior, molde_atual; //É uma busca de comparação, onde se houver idades iguais Salvaremos as informações de PT e Q.
+    MoldeA5 molde_a5 = {0, 0, 0};
+
+    int prim = 1; 
+    while (fread(&molde_atual, sizeof(MoldeA2_A3_A4), 1, a4) > 0) 
+    {
+        if (prim || molde_atual.idade != molde_anterior.idade) //Só é possível pois está ORDENADO por Idade como visto em A4
+        {
+            if (!prim) // Antes de escrever direto no arquivo A5, devemos verificar se é o primeiro registro a ser salvo com Idade X, para salvar em PT.
+            {
+                fwrite(&molde_a5, sizeof(MoldeA5), 1, arquivoA5);
+            }
+            molde_a5.idade = molde_atual.idade;
+            molde_a5.qtde = 1;
+            molde_a5.primeEnd = molde_atual.reg;
+        } 
+        else // Não é o primeiro registro de Idade X, e tem a mesma idade do anterior. Logo, Q da Idade X é aumentado.
+        {
+            molde_a5.qtde++;
+        }
+
+        molde_anterior = molde_atual; //Atualizamos o molde atual para o antigo e prosseguimos com o próximo até o fim do arquivo.
+        prim = 0;
+    }
+
+    fwrite(&molde_a5, sizeof(MoldeA5), 1, arquivoA5); // Salvar o último índice
+
+    fclose(a4);
+    fclose(arquivoA5);
+    printf("Arquivo A5 criado com êxito.\n");
+    return arquivoA5;
+}
+
+FILE* criarArquivoA6()
+{
+    FILE *a4 = fopen("A4.dat", "rb");
+    FILE *arquivoA6 = fopen("A6.dat", "wb");
+
+    if (a4 == NULL) 
+    {
+        printf("Erro ao abrir o Arquivo A4.\n");
+        exit(EXIT_FAILURE);
+    }
+
     if (arquivoA6 == NULL) 
     {
         printf("Erro ao criar o Arquivo A6.\n");
         exit(EXIT_FAILURE);
     }
 
-    MoldeA2_A3_A4 Molde_antigo, Molde_atual;
-    MoldeA5_A6 indice = {0, 0, 0};
-    long ultimoEndereco = -1;
+    MoldeA2_A3_A4 molde_atual, molde_prox; //Simlar ao anterior, onde se houver idades iguais, salvaremo o endereço anterior com o ED do atual.
+ 
+    fread(&molde_prox, sizeof(MoldeA2_A3_A4), 1, a4);
+    molde_atual = molde_prox;
 
-    int prim = 1;
-    while (fread(&Molde_atual, sizeof(MoldeA2_A3_A4), 1, a4) > 0) 
+    while (fread(&molde_prox, sizeof(MoldeA2_A3_A4), 1, a4) > 0) 
     {
-        if (prim || Molde_atual.idade != Molde_antigo.idade) {
-            if (!prim) 
-            {
-                fwrite(&indice, sizeof(MoldeA5_A6), 1, arquivoA5);
-            }
-            indice.idade = Molde_atual.idade;
-            indice.quantidade = 1;
-            indice.primeEnd = Molde_atual.ender;
-        } 
-        else {
-            indice.quantidade++;
+        if(molde_atual.idade != molde_prox.idade)
+        {
+            molde_atual.ender = -1;
+            fwrite(&molde_atual, sizeof(MoldeA2_A3_A4), 1, arquivoA6);
+            //printf("Idade: %d\t Registro: %d\t Codigo: %d\t Endereço: %d\n", molde_atual.idade, molde_atual.reg, molde_atual.cod, molde_atual.ender);
         }
+        else
+        {
+            molde_atual.ender = molde_prox.reg;
+            fwrite(&molde_atual, sizeof(MoldeA2_A3_A4), 1, arquivoA6);
+            //printf("Idade: %d\t Registro: %d\t Codigo: %d\t Endereço: %d\n", molde_atual.idade, molde_atual.reg, molde_atual.cod, molde_atual.ender);
+        }
+        molde_atual = molde_prox;
 
-        fwrite(&ultimoEndereco, sizeof(long), 1, arquivoA6); // Encadeamento
-        ultimoEndereco = Molde_atual.ender;
-        Molde_antigo = Molde_atual;
-        prim = 0;
-    }
-
-    fwrite(&indice, sizeof(MoldeA5_A6), 1, arquivoA5); // Salvar o último índice
-    fwrite(&ultimoEndereco, sizeof(long), 1, arquivoA6); // Salvar o último encadeamento
-
-    fclose(a4);
-    fclose(arquivoA5);
+    } 
+    
     fclose(arquivoA6);
-    printf("Arquivos A5 e A6 gerados com êxito.\n");
+    printf("Arquivo A6 criado com êxito.\n");
+    return arquivoA6;
+
 }
 
-FILE* imprimirArquivoA5() 
+
+//IMPRESSÃO DOS ARQUIVOS
+
+void imprimirArquivoA1()
+{
+    FILE *a1 = fopen("TabelaA1.dat", "rb");
+    if (a1 == NULL) 
+    {
+        printf("Erro ao abrir o Arquivo A1 na impressão.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("\n----------- Partição do Arquivo A1 -----------\n\n");
+
+    Cliente molde;
+    while (fread(&molde, sizeof(Cliente), 1, a1) > 0) 
+    {
+        printf("Codigo: %d\t Nome: %s\t Idade: %d\n", molde.cod, molde.nome, molde.idade);
+    }
+    fclose(a1);
+}
+
+void imprimirArquivoA2()
+{
+    FILE *a2 = fopen("A2.dat", "rb");
+    if (a2 == NULL) 
+    {
+        printf("Erro ao abrir o Arquivo A2 na impressão.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("\n----------- Partição do Arquivo A2 -----------\n\n");
+
+    MoldeA2_A3_A4 molde;
+    while (fread(&molde, sizeof(MoldeA2_A3_A4), 1, a2) > 0) 
+    {
+        printf("Registro: %d\t Codigo: %d\t Idade: %d\n", molde.reg, molde.cod, molde.idade);
+    }
+    fclose(a2);
+}
+
+void imprimirArquivoA3()
+{
+    FILE *a3 = fopen("A3.dat", "rb");
+    if (a3 == NULL) 
+    {
+        printf("Erro ao abrir o Arquivo A3 na impressão.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("\n----------- Partição do Arquivo A3 -----------\n\n");
+
+    MoldeA2_A3_A4 molde;
+    while (fread(&molde, sizeof(MoldeA2_A3_A4), 1, a3) > 0) 
+    {
+        printf("Idade: %d\t Registro: %d\t Codigo: %d\n ", molde.idade, molde.cod, molde.reg);
+    }
+
+    fclose(a3);
+}
+
+void imprimirArquivoA4()
+{
+    FILE *a4 = fopen("A4.dat", "rb");
+    if (a4 == NULL) 
+    {
+        printf("Erro ao abrir o Arquivo A4 na impressão.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("\n----------- Partição do Arquivo A4 -----------\n\n");
+
+    MoldeA2_A3_A4 molde;
+    while (fread(&molde, sizeof(MoldeA2_A3_A4), 1, a4) > 0) 
+    {
+        printf("Idade: %d\t Registro: %d\t Codigo: %d\n", molde.idade, molde.reg, molde.cod );
+    }
+    fclose(a4);
+
+}
+
+
+
+void imprimirArquivoA5() 
 {
     FILE *a5 = fopen("A5.dat", "rb");
     if (a5 == NULL) 
@@ -239,14 +374,36 @@ FILE* imprimirArquivoA5()
         exit(EXIT_FAILURE);
     }
 
-    printf("\n--- Partição do Arquivo A5 ---\n\n");
-    MoldeA5_A6 registro;
-    while (fread(&registro, sizeof(MoldeA5_A6), 1, a5) > 0) 
+    printf("\n----------- Partição do Arquivo A5 -----------\n\n");
+
+    MoldeA5 registro;
+    while (fread(&registro, sizeof(MoldeA5), 1, a5) > 0) 
     {
-        printf("Idade: %d, PT: %ld, Q: %d\n",
-               registro.idade, registro.primeEnd, registro.quantidade);
+        printf("Idade: %d\t PT: %d\t\t Q: %d\n", registro.idade, registro.primeEnd, registro.qtde);
     }
 
     fclose(a5);
-    return a5;
+
+}
+
+void imprimirArquivoA6() 
+{
+    FILE *a6 = fopen("A6.dat", "rb");
+
+    if (a6 == NULL) {
+        printf("Erro ao abrir o arquivo A6.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    MoldeA2_A3_A4 molde; // Para se adaptar conforme o Molde, primeEnd será o ENDEREÇO, não o PRIMEIRO ENDEREÇO. 
+
+    printf("\n----------- Partição do Arquivo A6 -----------\n\n");
+
+    while (fread(&molde, sizeof(MoldeA2_A3_A4), 1, a6) > 0) 
+    {
+        printf("Idade: %d\t Registro: %d\t Codigo: %d\t Endereço: %d\n", molde.idade, molde.reg, molde.cod, molde.ender);
+    }
+
+    fclose(a6);
+
 }

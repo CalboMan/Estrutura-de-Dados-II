@@ -66,8 +66,8 @@ void gerarTabelaA1() {
     FILE *out = fopen("TabelaA1.dat", "wb+");
 
     if(out == NULL){
-        printf("Erro ao gerar arquivo de tabela cliente");
-        return;
+        printf("Erro ao criar o Arquivo da Tabela A1\n");
+        exit(EXIT_FAILURE);
     }
 
     fwrite(clientes, sizeof(Cliente), QUANTIDADE_CLIENTES, out);

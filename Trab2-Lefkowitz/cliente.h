@@ -4,11 +4,11 @@
 typedef struct Cliente {
     
     int cod;
-    char Nome[50];
+    char nome[50];
     int idade;
 
 } Cliente;
 
-void gerarTabelaA1Cliente();
+void gerarTabelaA1();
 
 #endif // CLIENTE_H
