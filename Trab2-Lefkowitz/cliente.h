@@ -9,6 +9,6 @@ typedef struct Cliente {
 
 } Cliente;
 
-void gerarTabelaA1();
+void criarArquivoA1();
 
 #endif // CLIENTE_H
