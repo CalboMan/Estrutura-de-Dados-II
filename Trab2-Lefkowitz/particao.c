@@ -25,18 +25,9 @@ typedef struct
     
 } MoldeA5;
 
-typedef struct 
-{
-    int reg;
-    int cod;
-    int idade; 
-    int ender;
-
-} MoldeA6;
-
 FILE* criarArquivoA2(FILE* a1); 
 FILE* criarArquivosA3(); 
-FILE* ordenarArquivosA3(); 
+FILE* criarArquivoA4(); 
 FILE* criarArquivoA5();
 FILE* criarArquivoA6();
 
@@ -50,8 +41,8 @@ void imprimirArquivoA6();
 int main() 
 {
 
-    gerarTabelaA1(); // Arquivo A1 em cliente.c
-    FILE *arqOrig = fopen("TabelaA1.dat", "rb");
+    criarArquivoA1(); // Arquivo A1 em cliente.c
+    FILE *arqOrig = fopen("A1.dat", "rb");
     if (arqOrig == NULL) 
     {
         printf("Não foi possível abrir o Arquivo A1\n");
@@ -60,15 +51,15 @@ int main()
 
     FILE* A2 = criarArquivoA2(arqOrig); // Primeira Etapa
     FILE* A3 = criarArquivosA3(); // Segunda Etapa
-    FILE* A4 = ordenarArquivosA3(); // Terceira Etapa
+    FILE* A4 = criarArquivoA4(); // Terceira Etapa
     FILE* A5 = criarArquivoA5(); // Quarta Etapa
     FILE *A6 = criarArquivoA6(); // Quarta Etapa
 
     /*imprimirArquivoA1();
     imprimirArquivoA2();
     imprimirArquivoA3();
-    imprimirArquivoA4();
-    imprimirArquivoA5();*/
+    imprimirArquivoA4();*/
+    imprimirArquivoA5();
     imprimirArquivoA6();
 
     return 0;
@@ -127,7 +118,7 @@ FILE* criarArquivosA3()
 
     MoldeA2_A3_A4 molde;
     
-    // Como há apenas o molde_a5 secundário da Idade, será gerado o mesmo Molde do anterior
+    // Como há apenas o indice secundário da Idade, será gerado o mesmo Molde do anterior
     while (fread(&molde, sizeof(MoldeA2_A3_A4), 1, a2) > 0) 
     {
         fwrite(&molde, sizeof(MoldeA2_A3_A4), 1, arquivoA3);
@@ -140,7 +131,7 @@ FILE* criarArquivosA3()
     return arquivoA3;
 }
 
-FILE* ordenarArquivosA3() 
+FILE* criarArquivoA4() 
 {
     FILE *a3 = fopen("A3.dat", "rb");
     if (a3 == NULL) 
@@ -401,7 +392,7 @@ void imprimirArquivoA6()
 
     while (fread(&molde, sizeof(MoldeA2_A3_A4), 1, a6) > 0) 
     {
-        printf("Idade: %d\t Registro: %d\t Codigo: %d\t Endereço: %d\n", molde.idade, molde.reg, molde.cod, molde.ender);
+        printf("Idade: %d\t Registro: %d\t Codigo: %d\t Prox. Endereço: %d\n", molde.idade, molde.reg, molde.cod, molde.ender);
     }
 
     fclose(a6);
