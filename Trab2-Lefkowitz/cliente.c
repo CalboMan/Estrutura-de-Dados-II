@@ -5,7 +5,7 @@
 
 #define QUANTIDADE_CLIENTES 54
 
-void gerarTabelaA1() {
+void criarArquivoA1() {
     Cliente clientes[QUANTIDADE_CLIENTES] = {
         {29, "Alice Silva", 35},
         {14, "Bruno Souza", 42},
@@ -63,7 +63,7 @@ void gerarTabelaA1() {
         {2, "Débora Batista", 35}
     };
 
-    FILE *out = fopen("TabelaA1.dat", "wb+");
+    FILE *out = fopen("A1.dat", "wb+");
 
     if(out == NULL){
         printf("Erro ao criar o Arquivo da Tabela A1\n");
